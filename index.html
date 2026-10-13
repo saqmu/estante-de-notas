@@ -6,17 +6,78 @@
   <title>Minha Estante de Notas 3D</title>
   <link rel="stylesheet" href="style.css">
   
-  <!-- Three.js (Renderizador 3D) e GSAP (Animações elásticas) -->
+  <!-- Three.js e GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
 
-  <!-- Canvas onde o 3D será renderizado -->
+  <!-- Canvas 3D -->
   <canvas id="webgl-canvas"></canvas>
 
-  <!-- Botão flutuante "+" no canto superior direito -->
-  <button id="btn-add-note" title="Adicionar nova nota">+</button>
+  <!-- Botão flutuante "+" -->
+  <button id="btn-add-note" title="Criar nova nota">+</button>
+
+  <!-- MODAL DO BLOCO DE NOTAS -->
+  <div id="modal-overlay" class="hidden">
+    <div id="note-modal">
+      <div class="modal-header">
+        <input type="text" id="note-title" placeholder="Título do Livro..." maxlength="20" />
+        <button id="modal-close" class="close-btn">&times;</button>
+      </div>
+
+      <!-- Seletor de Tipo (Google Keep) -->
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="text">✍️ Texto</button>
+        <button class="tab-btn" data-tab="list">☑️ Lista</button>
+        <button class="tab-btn" data-tab="draw">🎨 Desenho</button>
+      </div>
+
+      <!-- Conteúdo 1: Texto -->
+      <div id="tab-text" class="tab-content active">
+        <textarea id="note-text" placeholder="Escreva suas anotações aqui..."></textarea>
+      </div>
+
+      <!-- Conteúdo 2: Lista -->
+      <div id="tab-list" class="tab-content">
+        <div class="checklist-input-group">
+          <input type="text" id="list-input" placeholder="Novo item da lista..." />
+          <button id="list-add-btn">+</button>
+        </div>
+        <ul id="checklist-items"></ul>
+      </div>
+
+      <!-- Conteúdo 3: Desenho -->
+      <div id="tab-draw" class="tab-content">
+        <div class="draw-tools">
+          <label>Cor:</label>
+          <input type="color" id="draw-color" value="#333333">
+          <button id="draw-clear" class="btn-secondary">Limpar</button>
+        </div>
+        <canvas id="draw-canvas" width="400" height="230"></canvas>
+      </div>
+
+      <!-- Rodapé: Cores do Livro + Ações -->
+      <div class="modal-footer">
+        <div class="color-picker-group">
+          <span class="color-label">Capa:</span>
+          <div class="color-palette">
+            <span class="color-circle active" data-color="#d95d4f" style="background: #d95d4f;"></span>
+            <span class="color-circle" data-color="#e9b657" style="background: #e9b657;"></span>
+            <span class="color-circle" data-color="#7ca884" style="background: #7ca884;"></span>
+            <span class="color-circle" data-color="#548c96" style="background: #548c96;"></span>
+            <span class="color-circle" data-color="#e27a65" style="background: #e27a65;"></span>
+            <span class="color-circle" data-color="#425866" style="background: #425866;"></span>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button id="btn-delete" class="btn-danger hidden">Excluir</button>
+          <button id="btn-save" class="btn-primary">Salvar Livro</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
