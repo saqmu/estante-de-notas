@@ -1,9 +1,11 @@
-// --- 1. CONFIGURAÇÃO BASE THREE.JS ---
+// ============================================================
+// 1. CONFIGURAÇÃO BASE THREE.JS & ILUMINAÇÃO ESTÚDIO SOFT CLAY
+// ============================================================
 const canvas = document.getElementById('webgl-canvas');
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 0, 11);
+camera.position.set(0, 0, 11.2);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -11,10 +13,10 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-scene.background = new THREE.Color('#d7c4b7');
+scene.background = new THREE.Color('#d7c4b7'); // Fundo café com leite
 
-// Iluminação suave (estilo clay 3D)
-const ambientLight = new THREE.AmbientLight(0xfff5ea, 0.85);
+// Iluminação Suave
+const ambientLight = new THREE.AmbientLight(0xfff7ed, 0.9);
 scene.add(ambientLight);
 
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
@@ -22,14 +24,16 @@ dirLight.position.set(5, 8, 7);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.width = 2048;
 dirLight.shadow.mapSize.height = 2048;
-dirLight.shadow.bias = -0.001;
+dirLight.shadow.bias = -0.0008;
 scene.add(dirLight);
 
-const softLight = new THREE.DirectionalLight(0xffd5b8, 0.4);
-softLight.position.set(-5, -2, 4);
-scene.add(softLight);
+const warmFillLight = new THREE.DirectionalLight(0xffdfcb, 0.45);
+warmFillLight.position.set(-5, -2, 4);
+scene.add(warmFillLight);
 
-// --- 2. ARMÁRIO DE MADEIRA ---
+// ============================================================
+// 2. CONSTRUÇÃO DO ARMÁRIO DE MADEIRA (3 ANDARES)
+// ============================================================
 const shelfGroup = new THREE.Group();
 scene.add(shelfGroup);
 
@@ -38,7 +42,7 @@ const woodBackMaterial = new THREE.MeshStandardMaterial({ color: 0xc89667, rough
 
 const shelfWidth = 5.2, shelfHeight = 7.0, shelfDepth = 1.6, boardThickness = 0.18;
 
-// Laterais e Fundo
+// Laterais
 const sideGeo = new THREE.BoxGeometry(boardThickness, shelfHeight, shelfDepth);
 const leftSide = new THREE.Mesh(sideGeo, woodMaterial);
 leftSide.position.x = -shelfWidth / 2;
@@ -50,6 +54,7 @@ rightSide.position.x = shelfWidth / 2;
 rightSide.castShadow = true;
 rightSide.receiveShadow = true;
 
+// Topo e Base
 const topBottomGeo = new THREE.BoxGeometry(shelfWidth + boardThickness, boardThickness, shelfDepth);
 const topBoard = new THREE.Mesh(topBottomGeo, woodMaterial);
 topBoard.position.y = shelfHeight / 2;
@@ -59,6 +64,7 @@ const bottomBoard = new THREE.Mesh(topBottomGeo, woodMaterial);
 bottomBoard.position.y = -shelfHeight / 2;
 bottomBoard.receiveShadow = true;
 
+// Fundo
 const backGeo = new THREE.BoxGeometry(shelfWidth, shelfHeight, 0.05);
 const backBoard = new THREE.Mesh(backGeo, woodBackMaterial);
 backBoard.position.z = -shelfDepth / 2 + 0.03;
@@ -66,7 +72,7 @@ backBoard.receiveShadow = true;
 
 shelfGroup.add(leftSide, rightSide, topBoard, bottomBoard, backBoard);
 
-// Divisórias das 3 prateleiras
+// Prateleiras internas (divisórias)
 [-1.15, 1.15].forEach(y => {
   const shelf = new THREE.Mesh(new THREE.BoxGeometry(shelfWidth - boardThickness, boardThickness, shelfDepth), woodMaterial);
   shelf.position.y = y;
@@ -75,10 +81,16 @@ shelfGroup.add(leftSide, rightSide, topBoard, bottomBoard, backBoard);
   shelfGroup.add(shelf);
 });
 
-// Chão de cada andar da estante
-const SHELF_FLOORS = [1.25, -1.05, -3.35];
+// Superfície exata onde os livros se apoiam (Topo da tábua de cada andar)
+const SHELF_FLOORS = [
+  1.15 + boardThickness / 2,  // Topo: 1.24
+ -1.15 + boardThickness / 2,  // Meio: -1.06
+ -shelfHeight / 2 + boardThickness / 2 // Base: -3.41
+];
 
-// --- 3. PLANTINHAS DECORATIVAS ---
+// ============================================================
+// 3. VASINHOS DECORATIVOS (IDÊNTICOS À IMAGEM)
+// ============================================================
 function createPlant(potColor, plantColor) {
   const group = new THREE.Group();
   const pot = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 24), new THREE.MeshStandardMaterial({ color: potColor, roughness: 0.4 }));
@@ -100,77 +112,73 @@ function createPlant(potColor, plantColor) {
   return group;
 }
 
+// Vaso terracota na prateleira do meio
 const orangeVase = createPlant(0xdb6b51, 0x6e8e6f);
 orangeVase.position.set(1.9, SHELF_FLOORS[1], 0.1);
 shelfGroup.add(orangeVase);
 
+// Vaso verde na prateleira de baixo
 const greenVase = createPlant(0x4e7c69, 0x98b899);
 greenVase.position.set(-1.9, SHELF_FLOORS[2], 0.1);
 shelfGroup.add(greenVase);
 
-// --- 4. GERADOR DE TEXTURA DA LOMBADA DO LIVRO ---
+// ============================================================
+// 4. LOMBADA E TEXTURA DINÂMICA DO LIVRO
+// ============================================================
 function generateSpineTexture(title, hexColor) {
   const c = document.createElement('canvas');
   c.width = 256;
   c.height = 1024;
   const ctx = c.getContext('2d');
 
-  // Cor de fundo do livro
+  // Cor da capa
   ctx.fillStyle = hexColor;
   ctx.fillRect(0, 0, c.width, c.height);
 
-  // Faixas douradas clássicas (estilo da imagem de referência)
+  // Faixas douradas clássicas (estampa da imagem de referência)
   ctx.fillStyle = '#f5d77f';
-  // Topo
   ctx.fillRect(25, 60, 206, 14);
   ctx.fillRect(25, 90, 206, 8);
-  // Base
   ctx.fillRect(25, 920, 206, 8);
   ctx.fillRect(25, 950, 206, 14);
 
-  // Título vertical na lombada
+  // Título vertical impresso
   ctx.save();
   ctx.translate(c.width / 2, c.height / 2);
   ctx.rotate(Math.PI / 2);
-  ctx.font = 'bold 46px Arial, sans-serif';
+  ctx.font = 'bold 46px "Segoe UI", Arial, sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
   ctx.shadowBlur = 6;
   ctx.fillText(title.toUpperCase().slice(0, 16), 0, 0);
   ctx.restore();
 
   const texture = new THREE.CanvasTexture(c);
+  texture.needsUpdate = true;
   return texture;
 }
 
-// --- 5. GERENCIAMENTO DE LIVROS / NOTAS ---
-const books = [];
+// ============================================================
+// 5. GERENCIAMENTO DE LIVROS E POSICIONAMENTO
+// ============================================================
+let books = [];
 const bookMeshes = [];
 let editingNoteId = null;
 
 const bookWidth = 0.34;
 const bookHeight = 1.8;
 const bookDepth = 1.1;
+const SHELF_CAPACITY = 10;
 
-// Criar o Mesh do livro 3D
 function createBookMesh(note) {
   const spineTexture = generateSpineTexture(note.title || 'NOTA', note.color);
   const coverMat = new THREE.MeshStandardMaterial({ color: note.color, roughness: 0.5 });
   const spineMat = new THREE.MeshStandardMaterial({ map: spineTexture, roughness: 0.5 });
   const pagesMat = new THREE.MeshStandardMaterial({ color: 0xfffcf0, roughness: 0.9 });
 
-  // Materiais das 6 faces: +X, -X, +Y, -Y, +Z (Lombada virada p/ frente), -Z
-  const materials = [
-    coverMat, // Direita (capa)
-    coverMat, // Esquerda (contracapa)
-    pagesMat, // Topo (folhas)
-    pagesMat, // Base
-    spineMat, // Frente (Lombada visível)
-    pagesMat  // Fundo
-  ];
-
+  const materials = [coverMat, coverMat, pagesMat, pagesMat, spineMat, pagesMat];
   const geo = new THREE.BoxGeometry(bookWidth, bookHeight, bookDepth);
   const mesh = new THREE.Mesh(geo, materials);
   mesh.castShadow = true;
@@ -180,32 +188,51 @@ function createBookMesh(note) {
   return mesh;
 }
 
-// Calcular onde cada livro deve se posicionar na estante
-function repositionBooks() {
-  const shelfCapacity = 11;
-  const startX = -2.0;
+// Calcula as coordenadas exatas na prateleira para qualquer índice
+function getSlotPosition(index) {
+  const shelfIndex = Math.min(2, Math.floor(index / SHELF_CAPACITY));
+  const slot = index % SHELF_CAPACITY;
   const spacing = 0.38;
 
+  let startX = -1.9;
+  if (shelfIndex === 1) startX = -2.0; // Desvio do vaso laranja
+  if (shelfIndex === 2) startX = -1.1; // Desvio do vaso verde
+
+  const x = startX + slot * spacing;
+  const y = SHELF_FLOORS[shelfIndex] + bookHeight / 2;
+  const z = 0.1;
+  return { x, y, z, shelfIndex };
+}
+
+// Descobre o índice mais próximo para onde o livro foi arrastado
+function getClosestIndexFromCoordinates(x, y) {
+  let shelfIndex = 0;
+  if (y > 0.4) shelfIndex = 0;
+  else if (y > -1.9) shelfIndex = 1;
+  else shelfIndex = 2;
+
+  let startX = -1.9;
+  if (shelfIndex === 1) startX = -2.0;
+  if (shelfIndex === 2) startX = -1.1;
+
+  const spacing = 0.38;
+  let slot = Math.round((x - startX) / spacing);
+  slot = Math.max(0, Math.min(SHELF_CAPACITY - 1, slot));
+
+  const candidate = shelfIndex * SHELF_CAPACITY + slot;
+  return Math.max(0, Math.min(books.length - 1, candidate));
+}
+
+// Reposiciona todos os livros com efeito elástico/bolha
+function repositionBooks(excludeMesh = null) {
   books.forEach((note, index) => {
-    const shelfIndex = Math.floor(index / shelfCapacity);
-    if (shelfIndex > 2) return; // Limite de 3 prateleiras
-
-    let slot = index % shelfCapacity;
-    let targetX = startX + slot * spacing;
-
-    // Desviar dos vasinhos de decoração
-    if (shelfIndex === 1 && targetX > 1.4) targetX = 1.4; 
-    if (shelfIndex === 2) targetX += 0.8;
-
-    const targetY = SHELF_FLOORS[shelfIndex] + bookHeight / 2;
-    const targetZ = 0.1;
-
     let mesh = bookMeshes.find(m => m.userData.id === note.id);
+    const targetPos = getSlotPosition(index);
 
     if (!mesh) {
-      // Livro novo sendo criado! Efeito elástico bolha:
+      // Livro novo surgindo na estante
       mesh = createBookMesh(note);
-      mesh.position.set(targetX, targetY, targetZ);
+      mesh.position.set(targetPos.x, targetPos.y, targetPos.z);
       mesh.scale.set(0.01, 0.01, 0.01);
       shelfGroup.add(mesh);
       bookMeshes.push(mesh);
@@ -215,18 +242,173 @@ function repositionBooks() {
         duration: 0.6,
         ease: 'back.out(2)'
       });
-    } else {
-      // Mover suavemente para a posição correta
+    } else if (mesh !== excludeMesh) {
+      // Livro já existente abrindo espaço
       gsap.to(mesh.position, {
-        x: targetX, y: targetY, z: targetZ,
-        duration: 0.4,
+        x: targetPos.x,
+        y: targetPos.y,
+        z: targetPos.z,
+        duration: 0.35,
         ease: 'power2.out'
       });
     }
   });
 }
 
-// --- 6. CONTROLES DO MODAL (UI) ---
+// ============================================================
+// 6. FÍSICA DE ARRASTAR & SOLTAR (DRAG & DROP FOFO)
+// ============================================================
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const dragPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -0.85);
+const planeIntersect = new THREE.Vector3();
+
+let draggedMesh = null;
+let isDragging = false;
+let startPointerPos = { x: 0, y: 0 };
+let currentHoverIndex = -1;
+
+window.addEventListener('pointerdown', (e) => {
+  // Ignora cliques que atingiram a interface (botão "+", modal, etc)
+  if (!modalOverlay.classList.contains('hidden')) return;
+  if (e.target.closest('#btn-add-note') || e.target.closest('#note-modal')) return;
+
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(bookMeshes);
+
+  if (intersects.length > 0) {
+    draggedMesh = intersects[0].object;
+    startPointerPos = { x: e.clientX, y: e.clientY };
+    currentHoverIndex = books.findIndex(b => b.id === draggedMesh.userData.id);
+    isDragging = false;
+  }
+});
+
+window.addEventListener('pointermove', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  if (!draggedMesh) {
+    const hits = raycaster.intersectObjects(bookMeshes);
+    canvas.classList.toggle('grab', hits.length > 0);
+    return;
+  }
+
+  const dist = Math.hypot(e.clientX - startPointerPos.x, e.clientY - startPointerPos.y);
+
+  if (!isDragging && dist > 7) {
+    isDragging = true;
+    canvas.classList.add('grabbing');
+
+    // Efeito bolha ao levantar o livro
+    gsap.to(draggedMesh.scale, { x: 1.1, y: 1.1, z: 1.1, duration: 0.2, ease: 'back.out(2)' });
+  }
+
+  if (isDragging) {
+    raycaster.ray.intersectPlane(dragPlane, planeIntersect);
+    const localPos = shelfGroup.worldToLocal(planeIntersect.clone());
+
+    draggedMesh.position.x = localPos.x;
+    draggedMesh.position.y = localPos.y;
+    draggedMesh.position.z = 0.85; // Suspenso na frente da estante
+
+    // Leve inclinação fofa ao balançar
+    const tilt = (e.clientX - startPointerPos.x) * 0.002;
+    draggedMesh.rotation.z = THREE.MathUtils.clamp(-tilt, -0.22, 0.22);
+
+    // Reorganiza os outros livros abrindo espaço
+    const targetIdx = getClosestIndexFromCoordinates(localPos.x, localPos.y);
+    if (targetIdx !== currentHoverIndex) {
+      const [moved] = books.splice(currentHoverIndex, 1);
+      books.splice(targetIdx, 0, moved);
+      currentHoverIndex = targetIdx;
+      repositionBooks(draggedMesh);
+    }
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  canvas.classList.remove('grabbing');
+
+  if (!draggedMesh) return;
+
+  if (isDragging) {
+    // Soltou o livro: Efeito elástico e assentamento no novo slot
+    const finalPos = getSlotPosition(currentHoverIndex);
+
+    gsap.to(draggedMesh.position, {
+      x: finalPos.x,
+      y: finalPos.y,
+      z: finalPos.z,
+      duration: 0.5,
+      ease: 'elastic.out(1.15, 0.4)'
+    });
+
+    gsap.to(draggedMesh.rotation, { x: 0, y: 0, z: 0, duration: 0.3 });
+    gsap.to(draggedMesh.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
+
+    saveToStorage();
+  } else {
+    // Apenas um clique rápido: abre a nota para ler e editar
+    const note = books.find(b => b.id === draggedMesh.userData.id);
+    if (note) {
+      gsap.to(draggedMesh.position, {
+        z: 0.55,
+        duration: 0.18,
+        yoyo: true,
+        repeat: 1,
+        ease: 'power2.out',
+        onComplete: () => openModal(note)
+      });
+    }
+  }
+
+  draggedMesh = null;
+  isDragging = false;
+});
+
+// ============================================================
+// 7. PERSISTÊNCIA NO NAVEGADOR (LOCAL STORAGE)
+// ============================================================
+function saveToStorage() {
+  localStorage.setItem('shelf_notes_3d_data', JSON.stringify(books));
+}
+
+function loadFromStorage() {
+  const saved = localStorage.getItem('shelf_notes_3d_data');
+  if (saved) {
+    try {
+      books = JSON.parse(saved);
+      // Aparição em cascata fofa na inicialização
+      books.forEach((note, i) => {
+        setTimeout(() => {
+          const targetPos = getSlotPosition(i);
+          const mesh = createBookMesh(note);
+          mesh.position.set(targetPos.x, targetPos.y, targetPos.z);
+          mesh.scale.set(0.01, 0.01, 0.01);
+          shelfGroup.add(mesh);
+          bookMeshes.push(mesh);
+
+          gsap.to(mesh.scale, {
+            x: 1, y: 1, z: 1,
+            duration: 0.55,
+            ease: 'back.out(2)'
+          });
+        }, i * 70);
+      });
+    } catch (e) {
+      console.error('Erro ao restaurar notas:', e);
+    }
+  }
+}
+
+// ============================================================
+// 8. INTERFACE DO MODAL (UI GOOGLE KEEP)
+// ============================================================
 const modalOverlay = document.getElementById('modal-overlay');
 const btnAddNote = document.getElementById('btn-add-note');
 const btnClose = document.getElementById('modal-close');
@@ -244,7 +426,7 @@ const drawCanvas = document.getElementById('draw-canvas');
 const dCtx = drawCanvas.getContext('2d');
 const drawColor = document.getElementById('draw-color');
 const drawClear = document.getElementById('draw-clear');
-let isDrawing = false;
+let isDrawingOnCanvas = false;
 
 // Checklist
 const listInput = document.getElementById('list-input');
@@ -255,7 +437,6 @@ let checklistData = [];
 let currentType = 'text';
 let currentColor = '#d95d4f';
 
-// Troca de Abas
 tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     tabButtons.forEach(b => b.classList.remove('active'));
@@ -266,7 +447,6 @@ tabButtons.forEach(btn => {
   });
 });
 
-// Escolha de Cor
 colorCircles.forEach(c => {
   c.addEventListener('click', () => {
     colorCircles.forEach(circle => circle.classList.remove('active'));
@@ -275,29 +455,41 @@ colorCircles.forEach(c => {
   });
 });
 
-// Ações do Desenho
+// Configuração do Desenho com precisão de tela
 function setupDrawing() {
   dCtx.lineWidth = 4;
   dCtx.lineCap = 'round';
-  dCtx.strokeStyle = drawColor.value;
 
-  drawCanvas.onmousedown = (e) => {
-    isDrawing = true;
-    dCtx.beginPath();
-    dCtx.moveTo(e.offsetX, e.offsetY);
-  };
-  drawCanvas.onmousemove = (e) => {
-    if (!isDrawing) return;
+  function getCanvasCoords(e) {
+    const rect = drawCanvas.getBoundingClientRect();
+    const scaleX = drawCanvas.width / rect.width;
+    const scaleY = drawCanvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  drawCanvas.addEventListener('pointerdown', (e) => {
+    isDrawingOnCanvas = true;
     dCtx.strokeStyle = drawColor.value;
-    dCtx.lineTo(e.offsetX, e.offsetY);
+    const coords = getCanvasCoords(e);
+    dCtx.beginPath();
+    dCtx.moveTo(coords.x, coords.y);
+  });
+
+  drawCanvas.addEventListener('pointermove', (e) => {
+    if (!isDrawingOnCanvas) return;
+    const coords = getCanvasCoords(e);
+    dCtx.lineTo(coords.x, coords.y);
     dCtx.stroke();
-  };
-  window.onmouseup = () => isDrawing = false;
+  });
+
+  window.addEventListener('pointerup', () => { isDrawingOnCanvas = false; });
   drawClear.onclick = () => dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
 }
 setupDrawing();
 
-// Ações da Checklist
 function renderChecklist() {
   checklistUl.innerHTML = '';
   checklistData.forEach((item, idx) => {
@@ -306,7 +498,7 @@ function renderChecklist() {
     li.innerHTML = `
       <input type="checkbox" ${item.done ? 'checked' : ''} />
       <span>${item.text}</span>
-      <button style="border:none;background:none;cursor:pointer;color:#999;">&times;</button>
+      <button type="button" style="border:none;background:none;cursor:pointer;color:#999;font-size:18px;">&times;</button>
     `;
     li.querySelector('input').onclick = () => {
       checklistData[idx].done = !checklistData[idx].done;
@@ -327,7 +519,10 @@ listAddBtn.onclick = () => {
   renderChecklist();
 };
 
-// Abrir e Fechar Modal
+listInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') listAddBtn.click();
+});
+
 function openModal(note = null) {
   modalOverlay.classList.remove('hidden');
 
@@ -371,7 +566,7 @@ function closeModal() {
 btnAddNote.onclick = () => openModal();
 btnClose.onclick = closeModal;
 
-// Salvar Livro / Nota
+// Salvar / Atualizar
 btnSave.onclick = () => {
   const title = noteTitle.value.trim() || 'Sem Título';
 
@@ -384,7 +579,6 @@ btnSave.onclick = () => {
     existing.checklist = [...checklistData];
     existing.drawing = drawCanvas.toDataURL();
 
-    // Atualiza textura da lombada
     const mesh = bookMeshes.find(m => m.userData.id === editingNoteId);
     if (mesh) {
       mesh.material[4].map = generateSpineTexture(title, currentColor);
@@ -406,6 +600,7 @@ btnSave.onclick = () => {
     repositionBooks();
   }
 
+  saveToStorage();
   closeModal();
 };
 
@@ -431,43 +626,16 @@ btnDelete.onclick = () => {
     });
   }
 
+  saveToStorage();
   closeModal();
 };
 
-// --- 7. CLIQUE NO LIVRO 3D (RAYCASTER) ---
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-window.addEventListener('pointerdown', (e) => {
-  if (!modalOverlay.classList.contains('hidden')) return;
-
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(bookMeshes);
-
-  if (intersects.length > 0) {
-    const clickedMesh = intersects[0].object;
-    const note = books.find(b => b.id === clickedMesh.userData.id);
-
-    if (note) {
-      // Efeito fofo: puxar o livro um pouco para frente antes de abrir a nota
-      gsap.to(clickedMesh.position, {
-        z: 0.6,
-        duration: 0.25,
-        yoyo: true,
-        repeat: 1,
-        ease: 'power2.out',
-        onComplete: () => openModal(note)
-      });
-    }
-  }
-});
-
-// Efeito de movimento do mouse (profundidade)
+// ============================================================
+// 9. LOOP DE RENDERIZAÇÃO & EFEITO PARALAXE
+// ============================================================
 let mouseX = 0, mouseY = 0;
 window.addEventListener('mousemove', (e) => {
+  if (isDragging) return;
   mouseX = (e.clientX / window.innerWidth - 0.5) * 0.12;
   mouseY = (e.clientY / window.innerHeight - 0.5) * 0.12;
 });
@@ -475,8 +643,13 @@ window.addEventListener('mousemove', (e) => {
 function animate() {
   requestAnimationFrame(animate);
 
-  shelfGroup.rotation.y += (mouseX - shelfGroup.rotation.y) * 0.05;
-  shelfGroup.rotation.x += (mouseY - shelfGroup.rotation.x) * 0.05;
+  if (!isDragging) {
+    shelfGroup.rotation.y += (mouseX - shelfGroup.rotation.y) * 0.05;
+    shelfGroup.rotation.x += (mouseY - shelfGroup.rotation.x) * 0.05;
+  } else {
+    shelfGroup.rotation.y *= 0.92;
+    shelfGroup.rotation.x *= 0.92;
+  }
 
   renderer.render(scene, camera);
 }
@@ -487,3 +660,6 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// Carrega as notas salvas ao iniciar
+loadFromStorage();
