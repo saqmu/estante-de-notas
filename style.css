@@ -2,16 +2,18 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none;
 }
 
 body, html {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #d7c4b7;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background-color: #d7c4b7; /* Café claro suave */
 }
 
+/* Canvas 3D */
 #webgl-canvas {
   position: absolute;
   top: 0;
@@ -19,22 +21,32 @@ body, html {
   width: 100vw;
   height: 100vh;
   display: block;
+  cursor: default;
 }
 
-/* Botão "+" flutuante */
+#webgl-canvas.grab {
+  cursor: grab;
+}
+
+#webgl-canvas.grabbing {
+  cursor: grabbing;
+}
+
+/* Botão "+" fofo no canto superior direito */
 #btn-add-note {
   position: fixed;
-  top: 25px;
-  right: 25px;
-  width: 55px;
-  height: 55px;
+  top: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
   background-color: #f7a072;
-  color: #fff;
-  border: 3px solid #fff;
+  color: #ffffff;
+  border: 3px solid #ffffff;
   border-radius: 50%;
   font-size: 34px;
+  font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 24px rgba(78, 52, 34, 0.22);
   transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
   display: flex;
   align-items: center;
@@ -47,6 +59,10 @@ body, html {
   background-color: #f28452;
 }
 
+#btn-add-note:active {
+  transform: scale(0.92);
+}
+
 /* Modal Overlay */
 #modal-overlay {
   position: fixed;
@@ -54,8 +70,8 @@ body, html {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(45, 30, 20, 0.45);
-  backdrop-filter: blur(4px);
+  background: rgba(54, 38, 28, 0.45);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,17 +87,18 @@ body, html {
 
 /* Cartão do Bloco de Notas */
 #note-modal {
-  width: 90%;
+  width: 92%;
   max-width: 480px;
-  background: #fffbf5;
+  background: #fffdf9;
   border-radius: 28px;
   padding: 24px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 50px rgba(45, 27, 14, 0.3);
   display: flex;
   flex-direction: column;
   gap: 16px;
   transform: scale(1);
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: auto;
 }
 
 #modal-overlay.hidden #note-modal {
@@ -96,21 +113,30 @@ body, html {
 
 #note-title {
   width: 85%;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   border: none;
   outline: none;
   background: transparent;
-  color: #3f2f27;
+  color: #3b2c24;
+}
+
+#note-title::placeholder {
+  color: #b5a297;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 28px;
+  font-size: 30px;
   color: #9c8a80;
   cursor: pointer;
   line-height: 1;
+  transition: color 0.15s;
+}
+
+.close-btn:hover {
+  color: #4a382e;
 }
 
 /* Abas (Texto, Lista, Desenho) */
@@ -135,32 +161,33 @@ body, html {
 
 .tab-btn.active {
   background: #f7a072;
-  color: #fff;
+  color: #ffffff;
 }
 
 .tab-content {
   display: none;
-  min-height: 220px;
+  min-height: 230px;
 }
 
 .tab-content.active {
   display: block;
 }
 
-/* Campo de Texto */
+/* Texto */
 #note-text {
   width: 100%;
-  height: 210px;
+  height: 220px;
   border: none;
   outline: none;
   resize: none;
   background: transparent;
   font-size: 15px;
   line-height: 1.6;
-  color: #4a3b32;
+  color: #47382f;
+  font-family: inherit;
 }
 
-/* Lista / Checkbox */
+/* Checklist */
 .checklist-input-group {
   display: flex;
   gap: 8px;
@@ -174,6 +201,8 @@ body, html {
   border-radius: 14px;
   outline: none;
   font-size: 14px;
+  background: #fff;
+  color: #3b2c24;
 }
 
 #list-add-btn {
@@ -184,11 +213,16 @@ body, html {
   border-radius: 14px;
   font-size: 20px;
   cursor: pointer;
+  transition: transform 0.15s;
+}
+
+#list-add-btn:hover {
+  transform: scale(1.05);
 }
 
 #checklist-items {
   list-style: none;
-  max-height: 160px;
+  max-height: 170px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -199,7 +233,7 @@ body, html {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f5ece4;
+  background: #f7eee7;
   padding: 8px 12px;
   border-radius: 12px;
 }
@@ -212,17 +246,19 @@ body, html {
 #checklist-items li span {
   flex: 1;
   font-size: 14px;
-  color: #4a3b32;
+  color: #47382f;
 }
 
-/* Área de Desenho */
+/* Desenho */
 #draw-canvas {
-  background: #fff;
+  background: #ffffff;
   border: 2px dashed #dbc9be;
   border-radius: 16px;
   cursor: crosshair;
   display: block;
   width: 100%;
+  height: 180px;
+  touch-action: none;
 }
 
 .draw-tools {
@@ -234,11 +270,20 @@ body, html {
   color: #665044;
 }
 
-/* Rodapé e Paleta de Cores */
+.draw-tools input[type="color"] {
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: none;
+}
+
+/* Rodapé e Paleta */
 .modal-footer {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   border-top: 2px solid #ede3db;
   padding-top: 14px;
 }
@@ -251,8 +296,8 @@ body, html {
 
 .color-label {
   font-size: 13px;
-  font-weight: 600;
-  color: #665044;
+  font-weight: 700;
+  color: #6b5346;
 }
 
 .color-palette {
@@ -274,8 +319,8 @@ body, html {
 }
 
 .color-circle.active {
-  border-color: #3f2f27;
-  transform: scale(1.2);
+  border-color: #3b2c24;
+  transform: scale(1.22);
 }
 
 .action-buttons {
@@ -293,24 +338,27 @@ body, html {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(247, 160, 114, 0.35);
-  transition: transform 0.15s;
+  box-shadow: 0 4px 12px rgba(247, 160, 114, 0.35);
+  transition: transform 0.15s, background 0.15s;
 }
 
 .btn-primary:hover {
   transform: scale(1.05);
+  background: #f28452;
 }
 
 .btn-secondary {
-  background: #e8ded6;
+  background: #ede3db;
   border: none;
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 12px;
   cursor: pointer;
+  color: #554135;
 }
 
 .btn-danger {
-  background: #df5849;
+  background: #e0584b;
   color: #fff;
   border: none;
   padding: 10px 18px;
@@ -318,6 +366,11 @@ body, html {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.btn-danger:hover {
+  transform: scale(1.05);
 }
 
 .hidden {
