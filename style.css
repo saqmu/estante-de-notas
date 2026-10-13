@@ -9,10 +9,9 @@ body, html {
   height: 100%;
   overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #d7c4b7; /* Cor café com leite suave */
+  background-color: #d7c4b7;
 }
 
-/* Canvas 3D ocupando a tela toda */
 #webgl-canvas {
   position: absolute;
   top: 0;
@@ -22,7 +21,7 @@ body, html {
   display: block;
 }
 
-/* Botão "+" no canto superior direito, estilo fofo/bolha */
+/* Botão "+" flutuante */
 #btn-add-note {
   position: fixed;
   top: 25px;
@@ -33,11 +32,10 @@ body, html {
   color: #fff;
   border: 3px solid #fff;
   border-radius: 50%;
-  font-size: 32px;
-  font-weight: bold;
+  font-size: 34px;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,6 +47,279 @@ body, html {
   background-color: #f28452;
 }
 
-#btn-add-note:active {
-  transform: scale(0.95);
+/* Modal Overlay */
+#modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(45, 30, 20, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+#modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Cartão do Bloco de Notas */
+#note-modal {
+  width: 90%;
+  max-width: 480px;
+  background: #fffbf5;
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#modal-overlay.hidden #note-modal {
+  transform: scale(0.85);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#note-title {
+  width: 85%;
+  font-size: 20px;
+  font-weight: 700;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #3f2f27;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #9c8a80;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Abas (Texto, Lista, Desenho) */
+.tab-buttons {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #ede3db;
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #8c7366;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: #f7a072;
+  color: #fff;
+}
+
+.tab-content {
+  display: none;
+  min-height: 220px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Campo de Texto */
+#note-text {
+  width: 100%;
+  height: 210px;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #4a3b32;
+}
+
+/* Lista / Checkbox */
+.checklist-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+#list-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #ede3db;
+  border-radius: 14px;
+  outline: none;
+  font-size: 14px;
+}
+
+#list-add-btn {
+  padding: 0 16px;
+  background: #7ca884;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#checklist-items {
+  list-style: none;
+  max-height: 160px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#checklist-items li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f5ece4;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+#checklist-items li.done span {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+#checklist-items li span {
+  flex: 1;
+  font-size: 14px;
+  color: #4a3b32;
+}
+
+/* Área de Desenho */
+#draw-canvas {
+  background: #fff;
+  border: 2px dashed #dbc9be;
+  border-radius: 16px;
+  cursor: crosshair;
+  display: block;
+  width: 100%;
+}
+
+.draw-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #665044;
+}
+
+/* Rodapé e Paleta de Cores */
+.modal-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 2px solid #ede3db;
+  padding-top: 14px;
+}
+
+.color-picker-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.color-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #665044;
+}
+
+.color-palette {
+  display: flex;
+  gap: 10px;
+}
+
+.color-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform 0.2s;
+}
+
+.color-circle:hover {
+  transform: scale(1.15);
+}
+
+.color-circle.active {
+  border-color: #3f2f27;
+  transform: scale(1.2);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-primary {
+  background: #f7a072;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(247, 160, 114, 0.35);
+  transition: transform 0.15s;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background: #e8ded6;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-danger {
+  background: #df5849;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
 }
