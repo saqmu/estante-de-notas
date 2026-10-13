@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Estante de Notas 3D</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Three.js (Renderizador 3D) e GSAP (Animações elásticas) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+  <!-- Canvas onde o 3D será renderizado -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- Botão flutuante "+" no canto superior direito -->
+  <button id="btn-add-note" title="Adicionar nova nota">+</button>
+
+  <script src="app.js"></script>
+</body>
+</html>
