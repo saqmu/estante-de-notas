@@ -1,63 +1,63 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minha Estante de Notas 3D</title>
-  <link rel="stylesheet" href="style.css">
-  
-  <!-- Three.js e GSAP -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estante de Notas 3D</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Three.js (3D) e GSAP (Animações elásticas) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
 
-  <!-- Canvas 3D -->
+  <!-- Tela 3D -->
   <canvas id="webgl-canvas"></canvas>
 
-  <!-- Botão flutuante "+" -->
-  <button id="btn-add-note" title="Criar nova nota">+</button>
+  <!-- Botão "+" no canto superior direito -->
+  <button id="btn-add-note" title="Criar novo livro">+</button>
 
   <!-- MODAL DO BLOCO DE NOTAS -->
   <div id="modal-overlay" class="hidden">
     <div id="note-modal">
       <div class="modal-header">
-        <input type="text" id="note-title" placeholder="Título do Livro..." maxlength="20" />
-        <button id="modal-close" class="close-btn">&times;</button>
+        <input type="text" id="note-title" placeholder="Título do Livro..." maxlength="18" />
+        <button id="modal-close" class="close-btn" title="Fechar">&times;</button>
       </div>
 
-      <!-- Seletor de Tipo (Google Keep) -->
+      <!-- Abas de Ferramentas -->
       <div class="tab-buttons">
-        <button class="tab-btn active" data-tab="text">✍️ Texto</button>
-        <button class="tab-btn" data-tab="list">☑️ Lista</button>
-        <button class="tab-btn" data-tab="draw">🎨 Desenho</button>
+        <button type="button" class="tab-btn active" data-tab="text">✍️ Texto</button>
+        <button type="button" class="tab-btn" data-tab="list">☑️ Lista</button>
+        <button type="button" class="tab-btn" data-tab="draw">🎨 Desenho</button>
       </div>
 
-      <!-- Conteúdo 1: Texto -->
+      <!-- 1. Aba de Texto -->
       <div id="tab-text" class="tab-content active">
         <textarea id="note-text" placeholder="Escreva suas anotações aqui..."></textarea>
       </div>
 
-      <!-- Conteúdo 2: Lista -->
+      <!-- 2. Aba de Lista de Tarefas -->
       <div id="tab-list" class="tab-content">
         <div class="checklist-input-group">
           <input type="text" id="list-input" placeholder="Novo item da lista..." />
-          <button id="list-add-btn">+</button>
+          <button type="button" id="list-add-btn">+</button>
         </div>
         <ul id="checklist-items"></ul>
       </div>
 
-      <!-- Conteúdo 3: Desenho -->
+      <!-- 3. Aba de Desenho à mão livre -->
       <div id="tab-draw" class="tab-content">
         <div class="draw-tools">
-          <label>Cor:</label>
-          <input type="color" id="draw-color" value="#333333">
-          <button id="draw-clear" class="btn-secondary">Limpar</button>
+          <label for="draw-color">Cor:</label>
+          <input type="color" id="draw-color" value="#3a2f28" />
+          <button type="button" id="draw-clear" class="btn-secondary">Limpar Tela</button>
         </div>
-        <canvas id="draw-canvas" width="400" height="230"></canvas>
+        <canvas id="draw-canvas" width="420" height="230"></canvas>
       </div>
 
-      <!-- Rodapé: Cores do Livro + Ações -->
+      <!-- Rodapé: Seletor de Cores da Capa e Botões -->
       <div class="modal-footer">
         <div class="color-picker-group">
           <span class="color-label">Capa:</span>
@@ -67,13 +67,13 @@
             <span class="color-circle" data-color="#7ca884" style="background: #7ca884;"></span>
             <span class="color-circle" data-color="#548c96" style="background: #548c96;"></span>
             <span class="color-circle" data-color="#e27a65" style="background: #e27a65;"></span>
-            <span class="color-circle" data-color="#425866" style="background: #425866;"></span>
+            <span class="color-circle" data-color="#455a64" style="background: #455a64;"></span>
           </div>
         </div>
 
         <div class="action-buttons">
-          <button id="btn-delete" class="btn-danger hidden">Excluir</button>
-          <button id="btn-save" class="btn-primary">Salvar Livro</button>
+          <button type="button" id="btn-delete" class="btn-danger hidden">Excluir</button>
+          <button type="button" id="btn-save" class="btn-primary">Salvar Livro</button>
         </div>
       </div>
     </div>
